@@ -657,7 +657,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:26:15</div>
+    <div class="time-badge">2026-06-20 13:28:21</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1594,7 +1594,7 @@
             {
                 name: '直接运损率', type: 'line', yAxisIndex: 1, data: directLossRates,
                 itemStyle: { color: '#f59e0b' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: false }
+                label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
             }
         ]
     });
@@ -1625,7 +1625,7 @@
             {
                 name: '间接运损率', type: 'line', yAxisIndex: 1, data: indirectLossRates,
                 itemStyle: { color: '#ef4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: false }
+                label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
             }
         ]
     });
@@ -1834,17 +1834,34 @@
                 });
             }
 
-            // 手机端：双轴图(平均时效)折线标签移到右侧，避免与柱状标签重叠
+            // 手机端：双轴图(平均时效)折线标签移到右侧
             if (mobile && id === 'timelinessChart') {
                 if (opt.series) {
                     opt.series.forEach(function(s) {
-                        // 第二个series是折线（运损率/推单时长）
                         if (s.type === 'line' && s.label) {
                             s.label.position = 'right';
                             s.label.fontSize = 9;
                         }
                     });
                 }
+            }
+
+            // 手机端：运损图隐藏折线(运损率)数据标签
+            if (mobile && (id === 'directLossChart' || id === 'indirectLossChart') && opt.series) {
+                opt.series.forEach(function(s) {
+                    if (s.type === 'line' && s.label) {
+                        s.label.show = false;
+                    }
+                });
+            }
+
+            // 手机端：运费对比标签不显示小数
+            if (mobile && id === 'freightChart' && opt.series) {
+                opt.series.forEach(function(s) {
+                    if (s.label && s.label.show) {
+                        s.label.formatter = function(p) { return Math.round(p.value); };
+                    }
+                });
             }
 
             c.setOption(opt);
