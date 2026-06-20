@@ -656,7 +656,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:06:44</div>
+    <div class="time-badge">2026-06-20 13:09:17</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1541,7 +1541,7 @@
                     { offset: 0, color: '#3b82f6' }, { offset: 1, color: '#60a5fa' }
                 ])
             },
-            label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9' },
+            label: { show: true, position: 'top', fontSize: 11, color: '#f1f5f9' },
             barMaxWidth: 40, showBackground: true,
             backgroundStyle: { color: 'rgba(59,130,246,0.06)', borderRadius: [4, 4, 0, 0] }
         }]
@@ -1561,7 +1561,7 @@
                     { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
                 ])
             },
-            label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value.toLocaleString(); } },
+            label: { show: true, position: 'top', fontSize: 11, color: '#f1f5f9', formatter: function(p) { return p.value.toLocaleString(); } },
             barMaxWidth: 40, showBackground: true,
             backgroundStyle: { color: 'rgba(16,185,129,0.06)', borderRadius: [4, 4, 0, 0] }
         }]
@@ -1586,14 +1586,14 @@
                         { offset: 0, color: '#ef4444' }, { offset: 1, color: '#f87171' }
                     ])
                 },
-                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9' },
+                label: { show: true, position: 'top', fontSize: 11, color: '#f1f5f9' },
                 barMaxWidth: 36, showBackground: true,
                 backgroundStyle: { color: 'rgba(239,68,68,0.06)', borderRadius: [4, 4, 0, 0] }
             },
             {
                 name: '直接运损率', type: 'line', yAxisIndex: 1, data: directLossRates,
                 itemStyle: { color: '#f59e0b' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
+                label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
             }
         ]
     });
@@ -1617,14 +1617,14 @@
                         { offset: 0, color: '#8b5cf6' }, { offset: 1, color: '#a78bfa' }
                     ])
                 },
-                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9' },
+                label: { show: true, position: 'top', fontSize: 11, color: '#f1f5f9' },
                 barMaxWidth: 36, showBackground: true,
                 backgroundStyle: { color: 'rgba(139,92,246,0.06)', borderRadius: [4, 4, 0, 0] }
             },
             {
                 name: '间接运损率', type: 'line', yAxisIndex: 1, data: indirectLossRates,
                 itemStyle: { color: '#ef4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
+                label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
             }
         ]
     });
@@ -1704,7 +1704,7 @@
                             { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
                         ])
                     },
-                    label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return p.value.toFixed(1) + '%'; } },
+                    label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return p.value.toFixed(1) + '%'; } },
                     barMaxWidth: 48, showBackground: true,
                     backgroundStyle: { color: 'rgba(16,185,129,0.06)', borderRadius: [4, 4, 0, 0] }
                 },
