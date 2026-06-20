@@ -329,7 +329,7 @@
         .route-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         .route-chart-wrap {
             flex: 1;
-            min-height: 300px;
+            min-height: 450px;
             position: relative;
             padding: 4px;
         }
@@ -626,6 +626,7 @@
             .route-compact-table th { font-size: 11px; padding: 5px 6px; }
             .route-compact-table td { font-size: 11px; padding: 4px 6px; }
             .route-table-wrap { max-height: 300px; }
+            .route-chart-wrap { min-height: 350px; }
             .two-col-card .card-hd { font-size: 14px; padding: 10px 14px; }
             .exception-kpi-card { padding: 8px 12px; }
             .exception-kpi-card .ek-value { font-size: 16px; }
@@ -656,7 +657,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:22:17</div>
+    <div class="time-badge">2026-06-20 13:26:15</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1767,7 +1768,7 @@
             legend: { data: ['总件数'], top: 0, textStyle: { fontSize: 11, color: '#f1f5f9' } },
             grid: { left: '3%', right: '4%', bottom: '3%', top: '14%', containLabel: true },
             xAxis: { type: 'value', name: '件数', nameTextStyle: { fontSize: 11, color: '#10b981' }, axisLabel: { fontSize: 11, color: '#10b981' }, splitLine: { show: false } },
-            yAxis: { type: 'category', data: rsRoutes, axisLabel: { fontSize: 13, fontWeight: 'bold', color: '#f1f5f9' }, inverse: true },
+            yAxis: { type: 'category', data: rsRoutes, axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#f1f5f9' }, inverse: true },
             series: [
                 {
                     name: '总件数', type: 'bar', data: rsShipments,
