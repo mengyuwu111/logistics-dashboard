@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物流部日报看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg: #111827;
+            --card-bg: #182030;
+            --primary: #3b82f6;
+            --primary-dark: #111827;
+            --accent-1: #3b82f6;
+            --accent-2: #10b981;
+            --accent-3: #f59e0b;
+            --accent-4: #ef4444;
+            --accent-5: #8b5cf6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #263348;
+            --border-light: #263348;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+            --shadow: 0 4px 16px rgba(0,0,0,0.4);
+            --radius: 8px;
+            --radius-sm: 4px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", -apple-system, "PingFang SC", "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            padding: 16px 20px;
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* ===== 顶部标题栏 ===== */
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #101826 0%, #151d2e 100%);
+            border-radius: var(--radius);
+            padding: 18px 28px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-bottom: 2px solid #3b82f6;
+        }
+        .dashboard-header .title-group h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f1f5f9;
+            letter-spacing: 1px;
+        }
+        .dashboard-header .title-group h1 span {
+            color: #3b82f6;
+        }
+        .dashboard-header .title-group .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .dashboard-header .time-badge {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(59,130,246,0.08);
+            padding: 6px 16px;
+            border-radius: 4px;
+            white-space: nowrap;
+            border: 1px solid rgba(59,130,246,0.2);
+        }
+
+        /* ===== KPI 指标卡 ===== */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            cursor: default;
+            border: 1px solid var(--border);
+            border-left: 3px solid transparent;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .kpi-card:nth-child(1) { border-left-color: #3b82f6; }
+        .kpi-card:nth-child(2) { border-left-color: #10b981; }
+        .kpi-card:nth-child(3) { border-left-color: #f59e0b; }
+        .kpi-card:nth-child(4) { border-left-color: #ef4444; }
+        .kpi-card:nth-child(5) { border-left-color: #8b5cf6; }
+        .kpi-card .kpi-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .kpi-card .kpi-icon.blue  { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .kpi-card .kpi-icon.green { background: rgba(16,185,129,0.12); color: #10b981; }
+        .kpi-card .kpi-icon.amber { background: rgba(245,158,11,0.12); color: #f59e0b; }
+        .kpi-card .kpi-icon.red   { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .kpi-card .kpi-icon.purple{ background: rgba(139,92,246,0.12); color: #8b5cf6; }
+        .kpi-card .kpi-info { min-width: 0; }
+        .kpi-card .kpi-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+        .kpi-card .kpi-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        /* ===== 三栏主布局（等高对齐） ===== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 220px 1.2fr 260px;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: stretch;
+        }
+        .main-grid > .card {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .main-grid > .card .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* ===== 左侧栏 - 汇总数据 ===== */
+        .summary-kpi-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: box-shadow 0.15s, border-color 0.15s;
+            cursor: default;
+        }
+        .summary-kpi-card:hover { box-shadow: var(--shadow); }
+        .summary-kpi-card:nth-child(1) { border-left-color: #3b82f6; }
+        .summary-kpi-card:nth-child(2) { border-left-color: #10b981; }
+        .summary-kpi-card:nth-child(3) { border-left-color: #f59e0b; }
+        .summary-kpi-card:nth-child(4) { border-left-color: #ef4444; }
+        .summary-kpi-card:nth-child(5) { border-left-color: #8b5cf6; }
+        .summary-kpi-card .sk-icon {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .summary-kpi-card .sk-icon.blue  { background: #3b82f6; }
+        .summary-kpi-card .sk-icon.green { background: #10b981; }
+        .summary-kpi-card .sk-icon.amber { background: #f59e0b; }
+        .summary-kpi-card .sk-icon.red   { background: #ef4444; }
+        .summary-kpi-card .sk-icon.purple{ background: #8b5cf6; }
+        .summary-kpi-card .sk-info { min-width: 0; }
+        .summary-kpi-card .sk-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .summary-kpi-card .sk-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* ===== 卡片通用 ===== */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: linear-gradient(180deg, #0d1320 0%, #111827 100%);
+        }
+        .card-header .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .card-header .dot.blue  { background: #3b82f6; }
+        .card-header .dot.green { background: #10b981; }
+        .card-header .dot.amber { background: #f59e0b; }
+        .card-header .dot.red   { background: #ef4444; }
+        .card-body { padding: 16px 20px; }
+        .card-body.no-padding { padding: 0; }
+
+        /* ===== 异常情况卡片（与左侧汇总KPI一致，文字放大） ===== */
+        .exception-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0;
+        }
+        .exception-kpi-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: box-shadow 0.15s, border-color 0.15s;
+            cursor: default;
+        }
+        .exception-kpi-card:hover { box-shadow: var(--shadow); }
+        .exception-kpi-card:nth-child(1) { border-left-color: #3b82f6; }
+        .exception-kpi-card:nth-child(2) { border-left-color: #10b981; }
+        .exception-kpi-card:nth-child(3) { border-left-color: #f59e0b; }
+        .exception-kpi-card:nth-child(4) { border-left-color: #ef4444; }
+        .exception-kpi-card:nth-child(5) { border-left-color: #8b5cf6; }
+        .exception-kpi-card:nth-child(6) { border-left-color: #06b6d4; }
+        .exception-kpi-card .ek-icon {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .exception-kpi-card .ek-icon.blue  { background: #3b82f6; }
+        .exception-kpi-card .ek-icon.green { background: #10b981; }
+        .exception-kpi-card .ek-icon.amber { background: #f59e0b; }
+        .exception-kpi-card .ek-icon.red   { background: #ef4444; }
+        .exception-kpi-card .ek-icon.purple{ background: #8b5cf6; }
+        .exception-kpi-card .ek-icon.cyan  { background: #06b6d4; }
+        .exception-kpi-card .ek-info { min-width: 0; }
+        .exception-kpi-card .ek-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .exception-kpi-card .ek-value {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .exception-kpi-card .ek-value.warn { color: #f59e0b; }
+        .exception-kpi-card .ek-value.danger { color: #ef4444; }
+
+        /* ===== 中栏 - 线路发运（带底色区分） ===== */
+        .route-compact-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+        .route-compact-table th {
+            background: #0d1320;
+            padding: 8px 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #10b981;
+            font-size: 13px;
+            border-bottom: 2px solid #10b981;
+        }
+        .route-compact-table td {
+            padding: 6px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        .route-compact-table tbody tr:nth-child(odd) { background: rgba(16,185,129,0.03); }
+        .route-compact-table tbody tr:nth-child(even) { background: transparent; }
+        .route-compact-table tbody tr:hover { background: rgba(16,185,129,0.08); }
+        .route-compact-table tfoot td {
+            font-weight: 700;
+            background: #0d1320 !important;
+            border-top: 2px solid #10b981;
+            border-bottom: none;
+            color: #10b981;
+        }
+        .route-compact-table .route-name { text-align: left; font-weight: 500; }
+
+        /* ===== 线路发运图表（与表格并排） ===== */
+        .route-table-wrap {
+            flex: 0 0 50%;
+            min-width: 0;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+        .route-table-wrap::-webkit-scrollbar { width: 5px; }
+        .route-table-wrap::-webkit-scrollbar-track { background: transparent; }
+        .route-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .route-chart-wrap {
+            flex: 1;
+            min-height: 300px;
+            position: relative;
+            padding: 4px;
+        }
+        .route-chart-wrap .route-chart-el {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+
+        /* ===== 图表容器 ===== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .chart-card .chart-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 12px 16px 0;
+        }
+        .chart-card .chart-box {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+        .chart-card .chart-el {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+
+        /* ===== 图表区域卡片 ===== */
+        .charts-section {
+            margin-bottom: 12px;
+        }
+
+        /* ===== 全宽表格区域 ===== */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .section-card .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: linear-gradient(180deg, #0d1320 0%, #111827 100%);
+        }
+        .section-card .section-header .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .section-card .dot.blue  { background: #3b82f6; }
+        .section-card .dot.green { background: #10b981; }
+        .section-card .dot.amber { background: #f59e0b; }
+
+        /* ===== 数据表格样式（带底色区分） ===== */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 16px;
+        }
+        .data-table thead th {
+            background: #0d1320;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #3b82f6;
+            font-size: 14px;
+            border-bottom: 2px solid #3b82f6;
+            white-space: nowrap;
+        }
+        .data-table tbody td {
+            padding: 8px 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        /* 承运商表格 */
+        .data-table.carrier-table tbody tr:nth-child(odd) { background: rgba(59,130,246,0.03); }
+        .data-table.carrier-table tbody tr:nth-child(even) { background: transparent; }
+        .data-table.carrier-table tbody tr:hover { background: rgba(59,130,246,0.08); }
+        /* 开单表格 */
+        .data-table.order-table tbody tr:nth-child(odd) { background: rgba(245,158,11,0.03); }
+        .data-table.order-table tbody tr:nth-child(even) { background: transparent; }
+        .data-table.order-table tbody tr:hover { background: rgba(245,158,11,0.08); }
+        /* 高亮行 */
+        .data-table tbody tr.highlight-row {
+            background: #0d1320 !important;
+            color: #3b82f6;
+            font-weight: 700;
+            border-top: 2px solid #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .data-table tbody tr.highlight-row td { color: #3b82f6; }
+        /* 警示高亮（运损率过高） */
+        .data-table tbody tr.warning-row { background: rgba(239,68,68,0.08) !important; }
+        .data-table tbody tr.warning-row td { color: #ef4444; }
+        .data-table .col-left { text-align: left; }
+        /* 数值列高亮 */
+        .data-table td.highlight-num { color: #f59e0b; font-weight: 700; }
+        .data-table td.good-num { color: #10b981; font-weight: 700; }
+        .data-table td.bad-num { color: #ef4444; font-weight: 700; }
+        .two-col-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .two-col-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .two-col-card .card-hd {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(180deg, #0d1320 0%, #111827 100%);
+            color: var(--text-primary);
+        }
+        .two-col-card .card-hd .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        .two-col-body {
+            flex: 1;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            min-height: 0;
+        }
+        /* 右侧(当月平均时效)整体垂直居中 */
+        .two-col-card:nth-child(2) .two-col-body {
+            align-items: center;
+        }
+        .two-col-card:nth-child(2) .tc-chart-wrap {
+            height: 280px;
+            min-height: unset;
+        }
+        .two-col-body .tc-table-wrap {
+            flex: 0 0 48%;
+            min-width: 0;
+            overflow: auto;
+            font-size: 14px;
+        }
+        /* 右侧时效表格 - 稍窄以适应三列表格 */
+        .two-col-card:nth-child(2) .tc-table-wrap {
+            flex: 0 0 38%;
+        }
+        .two-col-body .tc-table-wrap table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+        .two-col-body .tc-table-wrap thead th {
+            background: #0d1320;
+            padding: 8px 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 2px solid;
+        }
+        /* 及时率表格表头 */
+        .two-col-card:nth-child(1) .tc-table-wrap thead th {
+            color: #10b981;
+            border-color: #10b981;
+        }
+        /* 时效表格表头 */
+        .two-col-card:nth-child(2) .tc-table-wrap thead th {
+            color: #f59e0b;
+            border-color: #f59e0b;
+        }
+        .two-col-body .tc-table-wrap tbody td {
+            padding: 9px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        /* 及时率表格行底色 */
+        .two-col-card:nth-child(1) .tc-table-wrap tbody tr:nth-child(odd) { background: rgba(16,185,129,0.03); }
+        .two-col-card:nth-child(1) .tc-table-wrap tbody tr:nth-child(even) { background: transparent; }
+        .two-col-card:nth-child(1) .tc-table-wrap tbody tr:hover { background: rgba(16,185,129,0.08); }
+        /* 时效表格行底色 */
+        .two-col-card:nth-child(2) .tc-table-wrap tbody tr:nth-child(odd) { background: rgba(245,158,11,0.03); }
+        .two-col-card:nth-child(2) .tc-table-wrap tbody tr:nth-child(even) { background: transparent; }
+        .two-col-card:nth-child(2) .tc-table-wrap tbody tr:hover { background: rgba(245,158,11,0.08); }
+        /* 时效表格行 - 增大行高以匹配左侧 */
+        .two-col-card:nth-child(2) .tc-table-wrap tbody td {
+            padding: 10px 10px;
+            font-size: 12px;
+        }
+        .two-col-body .tc-chart-wrap {
+            flex: 1;
+            min-height: 320px;
+            position: relative;
+            padding: 8px;
+        }
+        .two-col-body .tc-chart-el {
+            width: 100%; height: 100%;
+        }
+        .highlight-row { font-weight: 700; background: #0d1320 !important; color: #3b82f6; }
+        .highlight-row td { color: #3b82f6 !important; border-top: 1px solid #3b82f6; border-bottom: 1px solid #3b82f6; }
+        .warn-row { background: rgba(245,158,11,0.1) !important; }
+        .warn-row td { color: #f59e0b !important; }
+        .danger-row { background: rgba(239,68,68,0.1) !important; }
+        .danger-row td { color: #ef4444 !important; }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1400px) {
+            .main-grid { grid-template-columns: 1fr 1fr; }
+            .main-grid > .card:first-child { display: none; }
+            .charts-grid { grid-template-columns: repeat(2, 1fr); }
+            .kpi-row { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .main-grid > .card:first-child { display: block; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .two-col-grid { grid-template-columns: 1fr; }
+            .two-col-body { flex-direction: column; }
+        }
+        /* ===== 手机端适配 ===== */
+        @media (max-width: 768px) {
+            body { padding: 8px 10px; }
+            .dashboard-header {
+                flex-direction: column; gap: 6px; padding: 12px 16px;
+                align-items: flex-start;
+            }
+            .dashboard-header .title-group h1 { font-size: 18px; }
+            .dashboard-header .time-badge { font-size: 11px; padding: 4px 10px; align-self: flex-start; }
+            .kpi-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .kpi-card { padding: 12px 14px; gap: 10px; }
+            .kpi-card .kpi-icon { width: 36px; height: 36px; font-size: 16px; }
+            .kpi-card .kpi-value { font-size: 20px; }
+            .main-grid { grid-template-columns: 1fr !important; }
+            .main-grid > .card:first-child { display: block !important; }
+            .charts-grid { grid-template-columns: 1fr !important; gap: 8px; }
+            .chart-card .chart-box { height: 260px; }
+            .two-col-grid { grid-template-columns: 1fr !important; gap: 8px; }
+            .two-col-body { flex-direction: column !important; }
+            .two-col-body .tc-table-wrap { flex: none !important; width: 100%; }
+            .two-col-card:nth-child(2) .tc-table-wrap { flex: none !important; width: 100%; }
+            .two-col-card:nth-child(2) .two-col-body { align-items: stretch !important; }
+            .two-col-card:nth-child(2) .tc-chart-wrap { height: 260px; min-height: unset; }
+            .two-col-body .tc-chart-wrap { min-height: 260px; }
+            .section-card .section-header { font-size: 14px; padding: 10px 14px; }
+            .card-header { font-size: 14px; padding: 10px 14px; }
+            .chart-card .chart-title { font-size: 14px; padding: 10px 12px 0; }
+            .data-table { font-size: 13px; }
+            .data-table thead th { font-size: 12px; padding: 6px 6px; }
+            .data-table tbody td { font-size: 12px; padding: 5px 6px; }
+            .two-col-body .tc-table-wrap { overflow-x: auto; }
+            .two-col-body .tc-table-wrap table { font-size: 12px; }
+            .two-col-body .tc-table-wrap thead th { font-size: 11px; padding: 6px 6px; }
+            .two-col-body .tc-table-wrap tbody td { font-size: 11px; padding: 5px 6px; }
+            .route-compact-table { font-size: 12px; }
+            .route-compact-table th { font-size: 11px; padding: 5px 6px; }
+            .route-compact-table td { font-size: 11px; padding: 4px 6px; }
+            .route-table-wrap { max-height: 300px; }
+            .two-col-card .card-hd { font-size: 14px; padding: 10px 14px; }
+            .exception-kpi-card { padding: 8px 12px; }
+            .exception-kpi-card .ek-value { font-size: 16px; }
+            .kpi-card .kpi-label { font-size: 10px; }
+            .summary-kpi-card .sk-value { font-size: 18px; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 6px 8px; }
+            .kpi-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .kpi-card { padding: 10px 10px; gap: 8px; }
+            .kpi-card .kpi-value { font-size: 17px; }
+            .kpi-card .kpi-icon { width: 30px; height: 30px; font-size: 14px; }
+            .dashboard-header .title-group h1 { font-size: 16px; }
+            .chart-card .chart-box { height: 220px; }
+            .two-col-body .tc-chart-wrap { min-height: 220px; }
+            .two-col-card:nth-child(2) .tc-chart-wrap { height: 220px; }
+            .data-table { font-size: 11px; }
+            .data-table thead th { font-size: 10px; padding: 4px 4px; }
+            .data-table tbody td { font-size: 10px; padding: 3px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== 顶部标题栏 ===== -->
+<div class="dashboard-header">
+    <div class="title-group">
+        <h1>物流部<span>日报看板</span></h1>
+        <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
+    </div>
+    <div class="time-badge">2026-06-20 11:34:11</div>
+</div>
+
+<!-- ===== 三栏主布局 ===== -->
+<div class="main-grid">
+    <!-- 左栏：汇总数据 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="dot blue"></span> 汇总数据
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;padding:12px 14px">
+            <div class="summary-kpi-card">
+                <div class="sk-icon blue"></div>
+                <div class="sk-info">
+                    <div class="sk-label">承运商</div>
+                    <div class="sk-value">16</div>
+                </div>
+            </div>
+            <div class="summary-kpi-card">
+                <div class="sk-icon green"></div>
+                <div class="sk-info">
+                    <div class="sk-label">总运费</div>
+                    <div class="sk-value">&yen;213.8万</div>
+                </div>
+            </div>
+            <div class="summary-kpi-card">
+                <div class="sk-icon amber"></div>
+                <div class="sk-info">
+                    <div class="sk-label">总发货单数</div>
+                    <div class="sk-value">18,441</div>
+                </div>
+            </div>
+            <div class="summary-kpi-card">
+                <div class="sk-icon red"></div>
+                <div class="sk-info">
+                    <div class="sk-label">直接运损</div>
+                    <div class="sk-value">32.0</div>
+                </div>
+            </div>
+            <div class="summary-kpi-card">
+                <div class="sk-icon purple"></div>
+                <div class="sk-info">
+                    <div class="sk-label">间接运损</div>
+                    <div class="sk-value">6.0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 中栏：昨日线路发运车次 + 图表 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="dot blue"></span> 昨日线路发运车次
+        </div>
+        <div class="card-body no-padding" style="display:flex">
+            <div class="route-table-wrap">
+            <table class="route-compact-table">
+                <thead>
+                    <tr>
+                        <th style="text-align:left">线路</th>
+                        <th>车型</th>
+                        <th>车次</th>
+                        <th>件数</th>
+                    </tr>
+                </thead>
+                <tbody id="routeShipmentCompactBody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td>合计</td>
+                        <td></td>
+                        <td id="routeVehicleTotal">-</td>
+                        <td id="routeShipmentTotal">-</td>
+                    </tr>
+                </tfoot>
+            </table>
+            </div>
+            <div class="route-chart-wrap"><div class="route-chart-el" id="routeChart"></div></div>
+        </div>
+    </div>
+
+    <!-- 右栏：昨日异常情况 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="dot red"></span> 昨日异常情况
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;padding:12px 14px">
+            <div class="exception-kpi-card">
+                <div class="ek-icon blue"></div>
+                <div class="ek-info">
+                    <div class="ek-label">出勤人数</div>
+                    <div class="ek-value" id="attendanceCount">-</div>
+                </div>
+            </div>
+            <div class="exception-kpi-card">
+                <div class="ek-icon green"></div>
+                <div class="ek-info">
+                    <div class="ek-label">满载</div>
+                    <div class="ek-value" id="fullLoadCount">-</div>
+                </div>
+            </div>
+            <div class="exception-kpi-card">
+                <div class="ek-icon amber"></div>
+                <div class="ek-info">
+                    <div class="ek-label">车辆到货异常</div>
+                    <div class="ek-value warn" id="vehicleExceptionCount">-</div>
+                </div>
+            </div>
+            <div class="exception-kpi-card">
+                <div class="ek-icon red"></div>
+                <div class="ek-info">
+                    <div class="ek-label">仓库异常</div>
+                    <div class="ek-value danger" id="warehouseExceptionCount">-</div>
+                </div>
+            </div>
+            <div class="exception-kpi-card">
+                <div class="ek-icon purple"></div>
+                <div class="ek-info">
+                    <div class="ek-label">发货异常</div>
+                    <div class="ek-value danger" id="shipmentExceptionCount">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 承运商详细数据（全宽表格） ===== -->
+<div class="section-card">
+    <div class="section-header">
+        <span class="dot blue"></span> 承运商详细数据
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table carrier-table">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>承运商</th>
+                    <th>运费(万元)</th>
+                    <th>发货单数</th>
+                    <th>直接运损数量</th>
+                    <th>直接运损率(%)</th>
+                    <th>间接运损数量</th>
+                    <th>间接运损率(%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="">
+                    <td>1</td>
+                    <td class="col-left">飞腾物流</td>
+                    <td>14.55</td>
+                    <td>2,352</td>
+                    <td>2.00</td>
+                    <td class="good-num">0.09%</td>
+                    <td>4.00</td>
+                    <td class="good-num">0.17%</td>
+                </tr>
+                <tr class="warn-row">
+                    <td>2</td>
+                    <td class="col-left">鸿皓物流</td>
+                    <td>8.91</td>
+                    <td>766</td>
+                    <td>14.00</td>
+                    <td class="bad-num">1.83%</td>
+                    <td>1.00</td>
+                    <td class="good-num">0.13%</td>
+                </tr>
+                <tr class="">
+                    <td>3</td>
+                    <td class="col-left">汇通物流</td>
+                    <td>20.50</td>
+                    <td>1,260</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>4</td>
+                    <td class="col-left">九尊物流</td>
+                    <td>41.49</td>
+                    <td>4,898</td>
+                    <td>3.00</td>
+                    <td class="good-num">0.06%</td>
+                    <td>1.00</td>
+                    <td class="good-num">0.02%</td>
+                </tr>
+                <tr class="">
+                    <td>5</td>
+                    <td class="col-left">乐居物流</td>
+                    <td>15.42</td>
+                    <td>1,580</td>
+                    <td>4.00</td>
+                    <td class="good-num">0.25%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>6</td>
+                    <td class="col-left">民生通物流</td>
+                    <td>21.28</td>
+                    <td>1,365</td>
+                    <td>3.00</td>
+                    <td class="good-num">0.22%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>7</td>
+                    <td class="col-left">全兴隆物流</td>
+                    <td>9.02</td>
+                    <td>738</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>8</td>
+                    <td class="col-left">尚捷速运</td>
+                    <td>13.57</td>
+                    <td>1,071</td>
+                    <td>1.00</td>
+                    <td class="good-num">0.09%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>9</td>
+                    <td class="col-left">五旗物流</td>
+                    <td>24.37</td>
+                    <td>1,052</td>
+                    <td>2.00</td>
+                    <td class="good-num">0.19%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>10</td>
+                    <td class="col-left">续航物流</td>
+                    <td>10.82</td>
+                    <td>635</td>
+                    <td>1.00</td>
+                    <td class="good-num">0.16%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>11</td>
+                    <td class="col-left">义港通物流</td>
+                    <td>5.21</td>
+                    <td>548</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>12</td>
+                    <td class="col-left">永旺物流</td>
+                    <td>11.79</td>
+                    <td>448</td>
+                    <td>1.00</td>
+                    <td class="good-num">0.22%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>13</td>
+                    <td class="col-left">赵春垒物流</td>
+                    <td>7.99</td>
+                    <td>869</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>14</td>
+                    <td class="col-left">五恒物流</td>
+                    <td>2.05</td>
+                    <td>196</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>15</td>
+                    <td class="col-left">展豪物流</td>
+                    <td>3.68</td>
+                    <td>327</td>
+                    <td>1.00</td>
+                    <td class="good-num">0.31%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+                <tr class="">
+                    <td>16</td>
+                    <td class="col-left">远征物流</td>
+                    <td>3.13</td>
+                    <td>336</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                    <td>0.00</td>
+                    <td class="">0.00%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== 4图表横向排列 ===== -->
+<div class="section-card charts-section">
+    <div class="section-header">
+        <span class="dot blue"></span> 承运商数据图表分析
+    </div>
+    <div class="card-body">
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">各承运商运费对比 / 万元</div>
+                <div class="chart-box"><div class="chart-el" id="freightChart"></div></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">各承运商发货单数对比</div>
+                <div class="chart-box"><div class="chart-el" id="orderChart"></div></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">直接运损数量与运损率</div>
+                <div class="chart-box"><div class="chart-el" id="directLossChart"></div></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">间接运损数量与运损率</div>
+                <div class="chart-box"><div class="chart-el" id="indirectLossChart"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 双栏：当月累计发货及时率 + 当月平均时效 ===== -->
+<div class="two-col-grid">
+    <!-- 当月累计发货及时率 -->
+    <div class="two-col-card">
+        <div class="card-hd">
+            <span class="dot green" style="background:#00ff9f"></span> 当月累计发货及时率
+        </div>
+        <div class="two-col-body">
+            <div class="tc-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>直营</th>
+                            <th>订单类型</th>
+                            <th>否</th>
+                            <th>是</th>
+                            <th>及时率</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timelinessRateTableBody"></tbody>
+                </table>
+            </div>
+            <div class="tc-chart-wrap">
+                <div class="tc-chart-el" id="timelinessRateChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 当月平均时效 -->
+    <div class="two-col-card">
+        <div class="card-hd">
+            <span class="dot amber" style="background:#ff9d00"></span> 当月平均时效
+        </div>
+        <div class="two-col-body">
+            <div class="tc-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>类型</th>
+                            <th>平均时长(天)</th>
+                            <th>推单时长(天)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timelinessTableBody"></tbody>
+                </table>
+            </div>
+            <div class="tc-chart-wrap">
+                <div class="tc-chart-el" id="timelinessChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 开单单数（不含空走账） ===== -->
+<div class="section-card">
+    <div class="section-header">
+        <span class="dot amber"></span> 开单单数（不含空走账）
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table order-table">
+            <thead>
+                <tr>
+                    <th>项目</th><th>当月累计</th><th>当月平均</th><th>6月19日</th><th>6月18日</th><th>6月17日</th><th>6月16日</th><th>6月15日</th><th>6月14日</th><th>6月13日</th><th>6月12日</th><th>6月11日</th>
+                </tr>
+            </thead>
+            <tbody id="dailyOrdersTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const carrierData = [
+    {
+        "carrier": "飞腾物流",
+        "freight": 145507.907,
+        "orderCount": 2352,
+        "directLossQty": 2.0,
+        "directLossRate": 0.08503401360544217,
+        "indirectLossQty": 4.0,
+        "indirectLossRate": 0.17006802721088435
+    },
+    {
+        "carrier": "鸿皓物流",
+        "freight": 89119.5375,
+        "orderCount": 766,
+        "directLossQty": 14.0,
+        "directLossRate": 1.8276762402088773,
+        "indirectLossQty": 1.0,
+        "indirectLossRate": 0.13054830287206268
+    },
+    {
+        "carrier": "汇通物流",
+        "freight": 204983.335,
+        "orderCount": 1260,
+        "directLossQty": 0,
+        "directLossRate": 0.0,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "九尊物流",
+        "freight": 414907.5,
+        "orderCount": 4898,
+        "directLossQty": 3.0,
+        "directLossRate": 0.061249489587586775,
+        "indirectLossQty": 1.0,
+        "indirectLossRate": 0.02041649652919559
+    },
+    {
+        "carrier": "乐居物流",
+        "freight": 154185.35,
+        "orderCount": 1580,
+        "directLossQty": 4.0,
+        "directLossRate": 0.25316455696202533,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "民生通物流",
+        "freight": 212805.925,
+        "orderCount": 1365,
+        "directLossQty": 3.0,
+        "directLossRate": 0.21978021978021978,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "全兴隆物流",
+        "freight": 90220.1,
+        "orderCount": 738,
+        "directLossQty": 0,
+        "directLossRate": 0.0,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "尚捷速运",
+        "freight": 135658.95,
+        "orderCount": 1071,
+        "directLossQty": 1.0,
+        "directLossRate": 0.09337068160597572,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "五旗物流",
+        "freight": 243714.375,
+        "orderCount": 1052,
+        "directLossQty": 2.0,
+        "directLossRate": 0.19011406844106463,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "续航物流",
+        "freight": 108232.62,
+        "orderCount": 635,
+        "directLossQty": 1.0,
+        "directLossRate": 0.15748031496062992,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "义港通物流",
+        "freight": 52148.9,
+        "orderCount": 548,
+        "directLossQty": 0,
+        "directLossRate": 0.0,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "永旺物流",
+        "freight": 117874.17825,
+        "orderCount": 448,
+        "directLossQty": 1.0,
+        "directLossRate": 0.2232142857142857,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "赵春垒物流",
+        "freight": 79857.975,
+        "orderCount": 869,
+        "directLossQty": 0,
+        "directLossRate": 0.0,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "五恒物流",
+        "freight": 20455.27,
+        "orderCount": 196,
+        "directLossQty": 0,
+        "directLossRate": 0.0,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "展豪物流",
+        "freight": 36812.005,
+        "orderCount": 327,
+        "directLossQty": 1.0,
+        "directLossRate": 0.3058103975535168,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    },
+    {
+        "carrier": "远征物流",
+        "freight": 31277.7125,
+        "orderCount": 336,
+        "directLossQty": 0,
+        "directLossRate": 0.0,
+        "indirectLossQty": 0,
+        "indirectLossRate": 0.0
+    }
+];
+    const carriers = carrierData.map(c => c.carrier);
+    const freights = carrierData.map(c => (c.freight / 10000).toFixed(2));
+    const orderCounts = carrierData.map(c => c.orderCount);
+    const directLossQtys = carrierData.map(c => c.directLossQty);
+    const directLossRates = carrierData.map(c => c.directLossRate);
+    const indirectLossQtys = carrierData.map(c => c.indirectLossQty);
+    const indirectLossRates = carrierData.map(c => c.indirectLossRate);
+
+    const timelinessRateData = [
+    {
+        "orderType": "空走账",
+        "no_count": 205,
+        "yes_count": 0,
+        "isDirect": "否",
+        "timeliness_rate": 0.0
+    },
+    {
+        "orderType": "配件订单",
+        "no_count": 7079,
+        "yes_count": 7,
+        "isDirect": "否",
+        "timeliness_rate": 0.09878633926051368
+    },
+    {
+        "orderType": "手工订单",
+        "no_count": 25,
+        "yes_count": 141,
+        "isDirect": "否",
+        "timeliness_rate": 84.93975903614458
+    },
+    {
+        "orderType": "特急订单",
+        "no_count": 729,
+        "yes_count": 2860,
+        "isDirect": "否",
+        "timeliness_rate": 79.68793535803846
+    },
+    {
+        "orderType": "正常订单",
+        "no_count": 2605,
+        "yes_count": 6228,
+        "isDirect": "否",
+        "timeliness_rate": 70.50832106871957
+    },
+    {
+        "orderType": "空走账",
+        "no_count": 36,
+        "yes_count": 0,
+        "isDirect": "是",
+        "timeliness_rate": 0.0
+    },
+    {
+        "orderType": "配件订单",
+        "no_count": 1251,
+        "yes_count": 1,
+        "isDirect": "是",
+        "timeliness_rate": 0.07987220447284345
+    },
+    {
+        "orderType": "手工订单",
+        "no_count": 36,
+        "yes_count": 5,
+        "isDirect": "是",
+        "timeliness_rate": 12.195121951219512
+    },
+    {
+        "orderType": "特急订单",
+        "no_count": 412,
+        "yes_count": 310,
+        "isDirect": "是",
+        "timeliness_rate": 42.93628808864266
+    },
+    {
+        "orderType": "正常订单",
+        "no_count": 1091,
+        "yes_count": 355,
+        "isDirect": "是",
+        "timeliness_rate": 24.550484094052557
+    },
+    {
+        "isDirect": "-",
+        "orderType": "总计",
+        "no_count": 13469,
+        "yes_count": 9907,
+        "timeliness_rate": 42.38107460643395
+    },
+    {
+        "isDirect": "-",
+        "orderType": "考核维度",
+        "no_count": 3359,
+        "yes_count": 9229,
+        "timeliness_rate": 73.31585637114712
+    }
+];
+    const avgTimelinessData = [
+    {
+        "name": "配件订单",
+        "avgDays": 8.35650424675905,
+        "pushDays": 0.0
+    },
+    {
+        "name": "手工订单",
+        "avgDays": 1.01685393258427,
+        "pushDays": 0.315789473684211
+    },
+    {
+        "name": "特急订单",
+        "avgDays": 1.19804342638988,
+        "pushDays": 0.286646469354463
+    },
+    {
+        "name": "正常订单",
+        "avgDays": 1.51346711020496,
+        "pushDays": 0.409227268025241
+    }
+];
+    const orderCountData = [
+    {
+        "item": "开单单数",
+        "daily_orders": [
+            22285.0,
+            1310.88235294118,
+            1027.0,
+            1072.0,
+            1996.0,
+            1824.0,
+            999.0,
+            813.0,
+            985.0,
+            599.0,
+            1055.0
+        ]
+    },
+    {
+        "item": "实发单数",
+        "daily_orders": [
+            21658.0,
+            1274.0,
+            1518.0,
+            1745.0,
+            1591.0,
+            1822.0,
+            1290.0,
+            136.0,
+            1092.0,
+            1129.0,
+            1120.0
+        ]
+    },
+    {
+        "item": "实发包数",
+        "daily_orders": [
+            222052.0,
+            13061.8823529412,
+            14894.0,
+            16581.0,
+            16082.0,
+            16642.0,
+            14927.0,
+            1103.0,
+            11154.0,
+            10900.0,
+            11346.0
+        ]
+    },
+    {
+        "item": "实发金额",
+        "daily_orders": [
+            7086.841548,
+            416.873032235294,
+            452.736406,
+            520.055367,
+            488.344178,
+            571.03376,
+            451.306146,
+            32.637965,
+            336.867583,
+            421.154211,
+            393.077738
+        ]
+    }
+];
+    const orderCountHeaders = [
+    "当月累计",
+    "当月平均",
+    "6月19日",
+    "6月18日",
+    "6月17日",
+    "6月16日",
+    "6月15日",
+    "6月14日",
+    "6月13日",
+    "6月12日",
+    "6月11日"
+];
+    const exceptionData = {
+    "attendance": "18人",
+    "fullLoad": "无",
+    "vehicleException": "无",
+    "warehouseException": "板件损坏2单、少货5单",
+    "shipmentException": "无",
+    "damage": ""
+};
+    const routeShipmentData = [
+    {
+        "route": "杭州线",
+        "vehicleType": "4.2M",
+        "vehicleCount": 1,
+        "shipmentCount": 486
+    },
+    {
+        "route": "江苏苏州线",
+        "vehicleType": "4.2M",
+        "vehicleCount": 1,
+        "shipmentCount": 247
+    },
+    {
+        "route": "金华线",
+        "vehicleType": "9.6M",
+        "vehicleCount": 1,
+        "shipmentCount": 685
+    },
+    {
+        "route": "九尊线",
+        "vehicleType": "4.2M",
+        "vehicleCount": 2,
+        "shipmentCount": 2046
+    },
+    {
+        "route": "快递",
+        "vehicleType": "4.2M",
+        "vehicleCount": 2,
+        "shipmentCount": 103
+    },
+    {
+        "route": "南京自提",
+        "vehicleType": "4.2M",
+        "vehicleCount": 1,
+        "shipmentCount": 2
+    },
+    {
+        "route": "陕西线",
+        "vehicleType": "13.5M",
+        "vehicleCount": 2,
+        "shipmentCount": 1339
+    },
+    {
+        "route": "苏-昆山线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 2,
+        "shipmentCount": 2713
+    },
+    {
+        "route": "苏-连云港线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 485
+    },
+    {
+        "route": "苏-南通线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 730
+    },
+    {
+        "route": "石家庄线",
+        "vehicleType": "13.5M",
+        "vehicleCount": 1,
+        "shipmentCount": 1274
+    },
+    {
+        "route": "九尊上海自提",
+        "vehicleType": "9.6M",
+        "vehicleCount": 2,
+        "shipmentCount": 800
+    },
+    {
+        "route": "苏-泰州线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 529
+    },
+    {
+        "route": "续航上海线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 500
+    },
+    {
+        "route": "太原普罗线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 547
+    },
+    {
+        "route": "九尊济南自提",
+        "vehicleType": "9.6M",
+        "vehicleCount": 1,
+        "shipmentCount": 703
+    },
+    {
+        "route": "锦州线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 2,
+        "shipmentCount": 491
+    }
+];
+
+    function createChart(id, config) {
+        const el = document.getElementById(id);
+        if (!el) { console.warn('Chart element not found:', id); return null; }
+        const chart = echarts.init(el);
+        chart.setOption(config);
+        return chart;
+    }
+
+    // ===== 运费对比 =====
+    createChart('freightChart', {
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
+        yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+        series: [{
+            type: 'bar', data: freights,
+            itemStyle: {
+                borderRadius: [4, 4, 0, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: '#3b82f6' }, { offset: 1, color: '#60a5fa' }
+                ])
+            },
+            label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9' },
+            barMaxWidth: 40, showBackground: true,
+            backgroundStyle: { color: 'rgba(59,130,246,0.06)', borderRadius: [4, 4, 0, 0] }
+        }]
+    });
+
+    // ===== 发货单数 =====
+    createChart('orderChart', {
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
+        yAxis: { type: 'value', name: '单数', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+        series: [{
+            type: 'bar', data: orderCounts,
+            itemStyle: {
+                borderRadius: [4, 4, 0, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
+                ])
+            },
+            label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9', formatter: function(p) { return p.value.toLocaleString(); } },
+            barMaxWidth: 40, showBackground: true,
+            backgroundStyle: { color: 'rgba(16,185,129,0.06)', borderRadius: [4, 4, 0, 0] }
+        }]
+    });
+
+    // ===== 直接运损 =====
+    createChart('directLossChart', {
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+            legend: { data: ['直接运损数量', '直接运损率'], top: 0, textStyle: { fontSize: 14, color: '#f1f5f9' } },
+        grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
+        yAxis: [
+            { type: 'value', name: '数量', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+            { type: 'value', name: '%', position: 'right', axisLabel: { formatter: '{value}%', color: '#f1f5f9' }, nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, splitLine: { show: false } }
+        ],
+        series: [
+            {
+                name: '直接运损数量', type: 'bar', data: directLossQtys,
+                itemStyle: {
+                    borderRadius: [4, 4, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#ef4444' }, { offset: 1, color: '#f87171' }
+                    ])
+                },
+                label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9' },
+                barMaxWidth: 36, showBackground: true,
+                backgroundStyle: { color: 'rgba(239,68,68,0.06)', borderRadius: [4, 4, 0, 0] }
+            },
+            {
+                name: '直接运损率', type: 'line', yAxisIndex: 1, data: directLossRates,
+                itemStyle: { color: '#f59e0b' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
+                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
+            }
+        ]
+    });
+
+    // ===== 间接运损 =====
+    createChart('indirectLossChart', {
+        tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+            legend: { data: ['间接运损数量', '间接运损率'], top: 0, textStyle: { fontSize: 14, color: '#f1f5f9' } },
+        grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
+        yAxis: [
+            { type: 'value', name: '数量', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+            { type: 'value', name: '%', position: 'right', axisLabel: { formatter: '{value}%', color: '#f1f5f9' }, nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, splitLine: { show: false } }
+        ],
+        series: [
+            {
+                name: '间接运损数量', type: 'bar', data: indirectLossQtys,
+                itemStyle: {
+                    borderRadius: [4, 4, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#8b5cf6' }, { offset: 1, color: '#a78bfa' }
+                    ])
+                },
+                label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9' },
+                barMaxWidth: 36, showBackground: true,
+                backgroundStyle: { color: 'rgba(139,92,246,0.06)', borderRadius: [4, 4, 0, 0] }
+            },
+            {
+                name: '间接运损率', type: 'line', yAxisIndex: 1, data: indirectLossRates,
+                itemStyle: { color: '#ef4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
+                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
+            }
+        ]
+    });
+
+    // ===== 平均时效 =====
+    const tlNames = avgTimelinessData.map(d => d.name);
+    const tlDays = avgTimelinessData.map(d => d.avgDays);
+    const tlPushDays = avgTimelinessData.map(d => d.pushDays);
+    createChart('timelinessChart', {
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['平均时长(天)', '推单时长(天)'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
+        grid: { left: '3%', right: '4%', bottom: '10%', top: '12%', containLabel: true },
+        xAxis: { type: 'category', data: tlNames, axisLabel: { rotate: 25, interval: 0, fontSize: 13, color: '#f1f5f9' } },
+        yAxis: { type: 'value', name: '天', nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+        series: [
+            {
+                name: '平均时长(天)', type: 'bar', data: tlDays,
+                itemStyle: {
+                    borderRadius: [4, 4, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#3b82f6' }, { offset: 1, color: '#60a5fa' }
+                    ])
+                },
+                label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return parseFloat(p.value).toFixed(1); } },
+                barMaxWidth: 36, showBackground: true,
+                backgroundStyle: { color: 'rgba(59,130,246,0.06)', borderRadius: [4, 4, 0, 0] }
+            },
+            {
+                name: '推单时长(天)', type: 'line', data: tlPushDays,
+                itemStyle: { color: '#ef4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
+                label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return parseFloat(p.value).toFixed(1); } }
+            }
+        ]
+    });
+
+    // ===== 当月平均时效表格（带重点高亮） =====
+    const tlTableBody = document.getElementById('timelinessTableBody');
+    avgTimelinessData.forEach(d => {
+        const tr = document.createElement('tr');
+        var pushClass = d.pushDays > d.avgDays ? 'bad-num' : 'good-num';
+        tr.innerHTML = '<td style="text-align:left;font-weight:500">' + d.name + '</td><td>' + d.avgDays.toFixed(2) + '</td><td class="' + pushClass + '">' + d.pushDays.toFixed(2) + '</td>';
+        tlTableBody.appendChild(tr);
+    });
+
+    // ===== 当月累计发货及时率表格 =====
+    const trTableBody = document.getElementById('timelinessRateTableBody');
+    timelinessRateData.forEach(d => {
+        const tr = document.createElement('tr');
+        if (d.orderType === '总计' || d.orderType === '考核维度') {
+            tr.className = 'highlight-row';
+        }
+        tr.innerHTML = '<td>' + d.isDirect + '</td><td style="text-align:left">' + d.orderType + '</td><td>' + d.no_count.toLocaleString() + '</td><td>' + d.yes_count.toLocaleString() + '</td><td>' + d.timeliness_rate.toFixed(2) + '%</td>';
+        trTableBody.appendChild(tr);
+    });
+
+    // ===== 发货及时率考核维度图表 =====
+    const chartData = timelinessRateData.filter(d =>
+        ['手工订单', '特急订单', '正常订单'].includes(d.orderType) && d.isDirect === '否'
+    );
+    const assessmentData = timelinessRateData.find(d => d.orderType === '考核维度');
+    if (chartData.length > 0 && assessmentData) {
+        const chNames = chartData.map(d => d.orderType);
+        const chRates = chartData.map(d => d.timeliness_rate);
+        const assRate = assessmentData.timeliness_rate;
+        createChart('timelinessRateChart', {
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['及时率', '考核基准线'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
+            grid: { left: '3%', right: '4%', bottom: '5%', top: '12%', containLabel: true },
+            xAxis: { type: 'category', data: chNames, axisLabel: { fontSize: 13, color: '#f1f5f9' } },
+            yAxis: { type: 'value', name: '%', max: 100, nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+            series: [
+                {
+                    name: '及时率', type: 'bar', data: chRates,
+                    itemStyle: {
+                        borderRadius: [4, 4, 0, 0],
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
+                        ])
+                    },
+                    label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value.toFixed(1) + '%'; } },
+                    barMaxWidth: 48, showBackground: true,
+                    backgroundStyle: { color: 'rgba(16,185,129,0.06)', borderRadius: [4, 4, 0, 0] }
+                },
+                {
+                    name: '考核基准线', type: 'line',
+                    data: chNames.map(function() { return assRate; }),
+                    itemStyle: { color: '#f59e0b' }, lineStyle: { width: 2, type: 'dashed' },
+                    symbol: 'none',
+                    label: { show: true, position: 'end', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return '基准: ' + p.value.toFixed(1) + '%'; } }
+                }
+            ]
+        });
+    }
+
+    // ===== 开单单数表格（仅突出显示当月平均和最右侧一列） =====
+    const doTableBody = document.getElementById('dailyOrdersTableBody');
+    orderCountData.forEach(function(item, rowIdx) {
+        const tr = document.createElement('tr');
+        let h = '<td class="col-left" style="font-weight:500">' + item.item + '</td>';
+        item.daily_orders.forEach(function(count, colIdx) {
+            // 仅突出显示：当月平均（index 1）和 当月平均右侧旁边一列（index 2）
+            var cellClass = '';
+            if (colIdx === 1 || colIdx === 2) cellClass = 'highlight-num';
+            h += '<td class="' + cellClass + '">' + count.toLocaleString() + '</td>';
+        });
+        tr.innerHTML = h;
+        doTableBody.appendChild(tr);
+    });
+
+    // ===== 异常情况填充 =====
+    if (exceptionData && typeof exceptionData === 'object') {
+        document.getElementById('attendanceCount').textContent = exceptionData.attendance || '-';
+        document.getElementById('fullLoadCount').textContent = exceptionData.fullLoad || '-';
+        document.getElementById('vehicleExceptionCount').textContent = exceptionData.vehicleException || '-';
+        document.getElementById('warehouseExceptionCount').textContent = exceptionData.warehouseException || '-';
+        document.getElementById('shipmentExceptionCount').textContent = exceptionData.shipmentException || '-';
+    }
+
+    // ===== 线路发运表格 =====
+    const rsBody = document.getElementById('routeShipmentCompactBody');
+    if (routeShipmentData && routeShipmentData.length > 0) {
+        let totalV = 0, totalS = 0;
+        routeShipmentData.forEach(function(item) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td class="route-name">' + item.route + '</td><td>' + item.vehicleType + '</td><td>' + item.vehicleCount + '</td><td>' + item.shipmentCount + '</td>';
+            rsBody.appendChild(tr);
+            totalV += item.vehicleCount;
+            totalS += item.shipmentCount;
+        });
+        document.getElementById('routeVehicleTotal').textContent = totalV;
+        document.getElementById('routeShipmentTotal').textContent = totalS;
+    }
+
+    // ===== 线路发运车次图表（只显示总件数） =====
+    if (routeShipmentData && routeShipmentData.length > 0) {
+        const rsRoutes = routeShipmentData.map(function(d) { return d.route; });
+        const rsShipments = routeShipmentData.map(function(d) { return d.shipmentCount; });
+        createChart('routeChart', {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { data: ['总件数'], top: 0, textStyle: { fontSize: 14, color: '#f1f5f9' } },
+            grid: { left: '3%', right: '4%', bottom: '3%', top: '14%', containLabel: true },
+            xAxis: { type: 'value', name: '件数', nameTextStyle: { fontSize: 14, color: '#10b981' }, axisLabel: { fontSize: 14, color: '#10b981' }, splitLine: { show: false } },
+            yAxis: { type: 'category', data: rsRoutes, axisLabel: { fontSize: 15, fontWeight: 'bold', color: '#f1f5f9' }, inverse: true },
+            series: [
+                {
+                    name: '总件数', type: 'bar', data: rsShipments,
+                    itemStyle: {
+                        borderRadius: [0, 4, 4, 0],
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
+                        ])
+                    },
+                    label: { show: true, position: 'right', fontSize: 14, color: '#34d399', fontWeight: 'bold' },
+                    barMaxWidth: 28, showBackground: true,
+                    backgroundStyle: { color: 'rgba(16,185,129,0.08)', borderRadius: [0, 4, 4, 0] }
+                }
+            ]
+        });
+    }
+
+    // ===== 响应式 resize =====
+    const allCharts = [];
+    ['freightChart','orderChart','directLossChart','indirectLossChart','timelinessChart','timelinessRateChart','routeChart'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            const inst = echarts.getInstanceByDom(el);
+            if (inst) allCharts.push(inst);
+        }
+    });
+    window.addEventListener('resize', function() {
+        allCharts.forEach(function(c) { c.resize(); });
+    });
+</script>
+</body>
+</html>
