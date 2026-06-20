@@ -657,7 +657,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 14:07:00</div>
+    <div class="time-badge">2026-06-20 14:10:03</div>
     <button onclick="showHistory()" style="margin-left:8px;padding:4px 12px;font-size:12px;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:4px;cursor:pointer;white-space:nowrap">历史数据</button>
 </div>
 
@@ -1917,12 +1917,16 @@
         var dateStr = document.getElementById('historyDate').value;
         if (!dateStr) { alert('请选择日期'); return; }
         var parts = dateStr.split('-');
-        var url = baseUrl + '/' + parts[0] + '/' + parts[1] + '/' + dateStr + '.json';
+        // 尝试加载完整看板
+        var htmlUrl = 'https://mengyuwu111.github.io/logistics-dashboard/history/' + parts[0] + '/' + parts[1] + '/' + dateStr + '.html';
+        var jsonUrl = baseUrl + '/' + parts[0] + '/' + parts[1] + '/' + dateStr + '.json';
         var resultDiv = document.getElementById('historyResult');
         var loadingDiv = document.getElementById('historyLoading');
         resultDiv.style.display = 'none';
         loadingDiv.style.display = 'block';
-        fetch(url)
+
+        // 先显示摘要，再提供完整看板入口
+        fetch(jsonUrl)
             .then(function(r) { if (!r.ok) throw new Error('无数据'); return r.json(); })
             .then(function(d) {
                 loadingDiv.style.display = 'none';
@@ -1937,7 +1941,9 @@
                     '<div>直接运损：<b>' + d.directLoss + '</b> 单</div>' +
                     '<div>间接运损：<b>' + d.indirectLoss + '</b> 单</div>' +
                     '<div>及时率：<b>' + d.timelinessRate + '</b>%</div>' +
-                    '</div></div>';
+                    '</div>' +
+                    '<a href="' + htmlUrl + '" target="_blank" style="display:block;text-align:center;margin-top:12px;padding:8px;background:#3b82f6;color:#fff;border-radius:4px;text-decoration:none">查看 ' + dateStr + ' 完整看板</a>' +
+                    '</div>';
             })
             .catch(function(e) {
                 loadingDiv.style.display = 'none';
