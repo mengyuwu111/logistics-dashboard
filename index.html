@@ -626,7 +626,7 @@
             .route-compact-table th { font-size: 11px; padding: 5px 6px; }
             .route-compact-table td { font-size: 11px; padding: 4px 6px; }
             .route-table-wrap { max-height: 300px; }
-            .route-chart-wrap { min-height: 350px; }
+            .route-chart-wrap { min-height: 400px; }
             .two-col-card .card-hd { font-size: 14px; padding: 10px 14px; }
             .exception-kpi-card { padding: 8px 12px; }
             .exception-kpi-card .ek-value { font-size: 16px; }
@@ -657,7 +657,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:28:21</div>
+    <div class="time-badge">2026-06-20 13:31:00</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1860,6 +1860,17 @@
                 opt.series.forEach(function(s) {
                     if (s.label && s.label.show) {
                         s.label.formatter = function(p) { return Math.round(p.value); };
+                    }
+                });
+            }
+
+            // 手机端：线路发运车次Y轴全部显示+缩小字号
+            if (mobile && id === 'routeChart' && opt.yAxis) {
+                var yAxes = Array.isArray(opt.yAxis) ? opt.yAxis : [opt.yAxis];
+                yAxes.forEach(function(ax) {
+                    if (ax.type === 'category' && ax.axisLabel) {
+                        ax.axisLabel.interval = 0;
+                        ax.axisLabel.fontSize = 10;
                     }
                 });
             }
