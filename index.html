@@ -656,7 +656,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:00:06</div>
+    <div class="time-badge">2026-06-20 13:01:48</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1787,30 +1787,45 @@
 
     // ===== 响应式 resize（含手机端图表适配）=====
     function isMobile() { return window.innerWidth <= 768; }
-    const allCharts = [];
-    ['freightChart','orderChart','directLossChart','indirectLossChart','timelinessChart','timelinessRateChart','routeChart'].forEach(function(id) {
-        const el = document.getElementById(id);
+    var chartIds = ['freightChart','orderChart','directLossChart','indirectLossChart','timelinessChart','timelinessRateChart','routeChart'];
+    var allCharts = [];
+    chartIds.forEach(function(id) {
+        var el = document.getElementById(id);
         if (el) {
-            const inst = echarts.getInstanceByDom(el);
+            var inst = echarts.getInstanceByDom(el);
             if (inst) allCharts.push(inst);
         }
     });
-    // 手机端调整图表底部间距，防止标签折叠
+    // 手机端调整：增大底部间距 + 标签防折叠
     function adjustMobileCharts() {
         var mobile = isMobile();
         allCharts.forEach(function(c) {
             var opt = c.getOption();
-            if (opt && opt.grid) {
+            if (!opt) return;
+            // 调整 grid 底部间距
+            if (opt.grid) {
                 var grids = Array.isArray(opt.grid) ? opt.grid : [opt.grid];
                 grids.forEach(function(g) {
-                    if (mobile && g.bottom && typeof g.bottom === 'string' && parseInt(g.bottom) < 20) {
-                        g.bottom = '18%';
-                    } else if (!mobile && g.bottom === '18%') {
+                    if (mobile) {
+                        g.bottom = '22%';
+                    } else {
                         g.bottom = '12%';
                     }
                 });
-                c.setOption(opt);
             }
+            // 手机端调整 xAxis 标签：取消旋转 + 间隔显示
+            if (mobile && opt.xAxis) {
+                var axes = Array.isArray(opt.xAxis) ? opt.xAxis : [opt.xAxis];
+                axes.forEach(function(ax) {
+                    if (ax.type === 'category' && ax.axisLabel) {
+                        ax.axisLabel.rotate = 0;
+                        ax.axisLabel.interval = 2;
+                        ax.axisLabel.fontSize = 10;
+                    }
+                    // 值类型的 xAxis（横条图）不用调
+                });
+            }
+            c.setOption(opt);
         });
     }
     adjustMobileCharts();
