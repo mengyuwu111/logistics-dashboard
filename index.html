@@ -603,7 +603,8 @@
             .main-grid { grid-template-columns: 1fr !important; }
             .main-grid > .card:first-child { display: block !important; }
             .charts-grid { grid-template-columns: 1fr !important; gap: 8px; }
-            .chart-card .chart-box { height: 260px; }
+            .chart-card .chart-box { height: 360px; }
+            .chart-card .chart-box .chart-el { height: 100%; }
             .two-col-grid { grid-template-columns: 1fr !important; gap: 8px; }
             .two-col-body { flex-direction: column !important; }
             .two-col-body .tc-table-wrap { flex: none !important; width: 100%; }
@@ -638,7 +639,7 @@
             .kpi-card .kpi-value { font-size: 17px; }
             .kpi-card .kpi-icon { width: 30px; height: 30px; font-size: 14px; }
             .dashboard-header .title-group h1 { font-size: 16px; }
-            .chart-card .chart-box { height: 220px; }
+            .chart-card .chart-box { height: 300px; }
             .two-col-body .tc-chart-wrap { min-height: 220px; }
             .two-col-card:nth-child(2) .tc-chart-wrap { height: 220px; }
             .data-table { font-size: 11px; }
@@ -655,7 +656,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 12:58:25</div>
+    <div class="time-badge">2026-06-20 13:00:06</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1784,7 +1785,8 @@
         });
     }
 
-    // ===== 响应式 resize =====
+    // ===== 响应式 resize（含手机端图表适配）=====
+    function isMobile() { return window.innerWidth <= 768; }
     const allCharts = [];
     ['freightChart','orderChart','directLossChart','indirectLossChart','timelinessChart','timelinessRateChart','routeChart'].forEach(function(id) {
         const el = document.getElementById(id);
@@ -1793,7 +1795,27 @@
             if (inst) allCharts.push(inst);
         }
     });
+    // 手机端调整图表底部间距，防止标签折叠
+    function adjustMobileCharts() {
+        var mobile = isMobile();
+        allCharts.forEach(function(c) {
+            var opt = c.getOption();
+            if (opt && opt.grid) {
+                var grids = Array.isArray(opt.grid) ? opt.grid : [opt.grid];
+                grids.forEach(function(g) {
+                    if (mobile && g.bottom && typeof g.bottom === 'string' && parseInt(g.bottom) < 20) {
+                        g.bottom = '18%';
+                    } else if (!mobile && g.bottom === '18%') {
+                        g.bottom = '12%';
+                    }
+                });
+                c.setOption(opt);
+            }
+        });
+    }
+    adjustMobileCharts();
     window.addEventListener('resize', function() {
+        adjustMobileCharts();
         allCharts.forEach(function(c) { c.resize(); });
     });
 </script>
