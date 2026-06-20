@@ -651,7 +651,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 12:48:04</div>
+    <div class="time-badge">2026-06-20 12:49:21</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1526,8 +1526,8 @@
     createChart('freightChart', {
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
         grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
-        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
-        yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 13, color: '#f1f5f9' } },
+        yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
         series: [{
             type: 'bar', data: freights,
             itemStyle: {
@@ -1536,7 +1536,7 @@
                     { offset: 0, color: '#3b82f6' }, { offset: 1, color: '#60a5fa' }
                 ])
             },
-            label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9' },
+            label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9' },
             barMaxWidth: 40, showBackground: true,
             backgroundStyle: { color: 'rgba(59,130,246,0.06)', borderRadius: [4, 4, 0, 0] }
         }]
@@ -1546,8 +1546,8 @@
     createChart('orderChart', {
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
         grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
-        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
-        yAxis: { type: 'value', name: '单数', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 13, color: '#f1f5f9' } },
+        yAxis: { type: 'value', name: '单数', nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
         series: [{
             type: 'bar', data: orderCounts,
             itemStyle: {
@@ -1556,7 +1556,7 @@
                     { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
                 ])
             },
-            label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9', formatter: function(p) { return p.value.toLocaleString(); } },
+            label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value.toLocaleString(); } },
             barMaxWidth: 40, showBackground: true,
             backgroundStyle: { color: 'rgba(16,185,129,0.06)', borderRadius: [4, 4, 0, 0] }
         }]
@@ -1565,12 +1565,12 @@
     // ===== 直接运损 =====
     createChart('directLossChart', {
         tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-            legend: { data: ['直接运损数量', '直接运损率'], top: 0, textStyle: { fontSize: 14, color: '#f1f5f9' } },
+            legend: { data: ['直接运损数量', '直接运损率'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
         grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
-        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 13, color: '#f1f5f9' } },
         yAxis: [
-            { type: 'value', name: '数量', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
-            { type: 'value', name: '%', position: 'right', axisLabel: { formatter: '{value}%', color: '#f1f5f9' }, nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, splitLine: { show: false } }
+            { type: 'value', name: '数量', nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+            { type: 'value', name: '%', position: 'right', axisLabel: { formatter: '{value}%', color: '#f1f5f9' }, nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, splitLine: { show: false } }
         ],
         series: [
             {
@@ -1581,14 +1581,14 @@
                         { offset: 0, color: '#ef4444' }, { offset: 1, color: '#f87171' }
                     ])
                 },
-                label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9' },
+                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9' },
                 barMaxWidth: 36, showBackground: true,
                 backgroundStyle: { color: 'rgba(239,68,68,0.06)', borderRadius: [4, 4, 0, 0] }
             },
             {
                 name: '直接运损率', type: 'line', yAxisIndex: 1, data: directLossRates,
                 itemStyle: { color: '#f59e0b' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
+                label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
             }
         ]
     });
@@ -1596,12 +1596,12 @@
     // ===== 间接运损 =====
     createChart('indirectLossChart', {
         tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-            legend: { data: ['间接运损数量', '间接运损率'], top: 0, textStyle: { fontSize: 14, color: '#f1f5f9' } },
+            legend: { data: ['间接运损数量', '间接运损率'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
         grid: { left: '3%', right: '4%', bottom: '12%', top: '12%', containLabel: true },
-        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 14, color: '#f1f5f9' } },
+        xAxis: { type: 'category', data: carriers, axisLabel: { rotate: 30, interval: 0, fontSize: 13, color: '#f1f5f9' } },
         yAxis: [
-            { type: 'value', name: '数量', nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
-            { type: 'value', name: '%', position: 'right', axisLabel: { formatter: '{value}%', color: '#f1f5f9' }, nameTextStyle: { fontSize: 14, color: '#f1f5f9' }, splitLine: { show: false } }
+            { type: 'value', name: '数量', nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+            { type: 'value', name: '%', position: 'right', axisLabel: { formatter: '{value}%', color: '#f1f5f9' }, nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, splitLine: { show: false } }
         ],
         series: [
             {
@@ -1612,14 +1612,14 @@
                         { offset: 0, color: '#8b5cf6' }, { offset: 1, color: '#a78bfa' }
                     ])
                 },
-                label: { show: true, position: 'top', fontSize: 14, color: '#f1f5f9' },
+                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9' },
                 barMaxWidth: 36, showBackground: true,
                 backgroundStyle: { color: 'rgba(139,92,246,0.06)', borderRadius: [4, 4, 0, 0] }
             },
             {
                 name: '间接运损率', type: 'line', yAxisIndex: 1, data: indirectLossRates,
                 itemStyle: { color: '#ef4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
+                label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return p.value > 0 ? p.value.toFixed(1) + '%' : ''; } }
             }
         ]
     });
@@ -1630,10 +1630,10 @@
     const tlPushDays = avgTimelinessData.map(d => d.pushDays);
     createChart('timelinessChart', {
         tooltip: { trigger: 'axis' },
-        legend: { data: ['平均时长(天)', '推单时长(天)'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
+        legend: { data: ['平均时长(天)', '推单时长(天)'], top: 0, textStyle: { fontSize: 12, color: '#f1f5f9' } },
         grid: { left: '3%', right: '4%', bottom: '10%', top: '12%', containLabel: true },
-        xAxis: { type: 'category', data: tlNames, axisLabel: { rotate: 25, interval: 0, fontSize: 13, color: '#f1f5f9' } },
-        yAxis: { type: 'value', name: '天', nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+        xAxis: { type: 'category', data: tlNames, axisLabel: { rotate: 25, interval: 0, fontSize: 12, color: '#f1f5f9' } },
+        yAxis: { type: 'value', name: '天', nameTextStyle: { fontSize: 12, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
         series: [
             {
                 name: '平均时长(天)', type: 'bar', data: tlDays,
@@ -1643,14 +1643,14 @@
                         { offset: 0, color: '#3b82f6' }, { offset: 1, color: '#60a5fa' }
                     ])
                 },
-                label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return parseFloat(p.value).toFixed(1); } },
+                label: { show: true, position: 'top', fontSize: 11, color: '#f1f5f9', formatter: function(p) { return parseFloat(p.value).toFixed(1); } },
                 barMaxWidth: 36, showBackground: true,
                 backgroundStyle: { color: 'rgba(59,130,246,0.06)', borderRadius: [4, 4, 0, 0] }
             },
             {
                 name: '推单时长(天)', type: 'line', data: tlPushDays,
                 itemStyle: { color: '#ef4444' }, lineStyle: { width: 2 }, symbol: 'circle', symbolSize: 6,
-                label: { show: true, position: 'top', fontSize: 10, color: '#f1f5f9', formatter: function(p) { return parseFloat(p.value).toFixed(1); } }
+                label: { show: true, position: 'top', fontSize: 9, color: '#f1f5f9', formatter: function(p) { return parseFloat(p.value).toFixed(1); } }
             }
         ]
     });
@@ -1686,10 +1686,10 @@
         const assRate = assessmentData.timeliness_rate;
         createChart('timelinessRateChart', {
             tooltip: { trigger: 'axis' },
-            legend: { data: ['及时率', '考核基准线'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
+            legend: { data: ['及时率', '考核基准线'], top: 0, textStyle: { fontSize: 12, color: '#f1f5f9' } },
             grid: { left: '3%', right: '4%', bottom: '5%', top: '12%', containLabel: true },
-            xAxis: { type: 'category', data: chNames, axisLabel: { fontSize: 13, color: '#f1f5f9' } },
-            yAxis: { type: 'value', name: '%', max: 100, nameTextStyle: { fontSize: 13, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
+            xAxis: { type: 'category', data: chNames, axisLabel: { fontSize: 12, color: '#f1f5f9' } },
+            yAxis: { type: 'value', name: '%', max: 100, nameTextStyle: { fontSize: 12, color: '#f1f5f9' }, axisLabel: { color: '#f1f5f9' }, splitLine: { show: false } },
             series: [
                 {
                     name: '及时率', type: 'bar', data: chRates,
@@ -1699,7 +1699,7 @@
                             { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
                         ])
                     },
-                    label: { show: true, position: 'top', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return p.value.toFixed(1) + '%'; } },
+                    label: { show: true, position: 'top', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return p.value.toFixed(1) + '%'; } },
                     barMaxWidth: 48, showBackground: true,
                     backgroundStyle: { color: 'rgba(16,185,129,0.06)', borderRadius: [4, 4, 0, 0] }
                 },
@@ -1708,7 +1708,7 @@
                     data: chNames.map(function() { return assRate; }),
                     itemStyle: { color: '#f59e0b' }, lineStyle: { width: 2, type: 'dashed' },
                     symbol: 'none',
-                    label: { show: true, position: 'end', fontSize: 13, color: '#f1f5f9', formatter: function(p) { return '基准: ' + p.value.toFixed(1) + '%'; } }
+                    label: { show: true, position: 'end', fontSize: 12, color: '#f1f5f9', formatter: function(p) { return '基准: ' + p.value.toFixed(1) + '%'; } }
                 }
             ]
         });
@@ -1759,9 +1759,9 @@
         const rsShipments = routeShipmentData.map(function(d) { return d.shipmentCount; });
         createChart('routeChart', {
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { data: ['总件数'], top: 0, textStyle: { fontSize: 14, color: '#f1f5f9' } },
+            legend: { data: ['总件数'], top: 0, textStyle: { fontSize: 13, color: '#f1f5f9' } },
             grid: { left: '3%', right: '4%', bottom: '3%', top: '14%', containLabel: true },
-            xAxis: { type: 'value', name: '件数', nameTextStyle: { fontSize: 14, color: '#10b981' }, axisLabel: { fontSize: 14, color: '#10b981' }, splitLine: { show: false } },
+            xAxis: { type: 'value', name: '件数', nameTextStyle: { fontSize: 13, color: '#10b981' }, axisLabel: { fontSize: 13, color: '#10b981' }, splitLine: { show: false } },
             yAxis: { type: 'category', data: rsRoutes, axisLabel: { fontSize: 15, fontWeight: 'bold', color: '#f1f5f9' }, inverse: true },
             series: [
                 {
@@ -1772,7 +1772,7 @@
                             { offset: 0, color: '#10b981' }, { offset: 1, color: '#34d399' }
                         ])
                     },
-                    label: { show: true, position: 'right', fontSize: 14, color: '#34d399', fontWeight: 'bold' },
+                    label: { show: true, position: 'right', fontSize: 13, color: '#34d399', fontWeight: 'bold' },
                     barMaxWidth: 28, showBackground: true,
                     backgroundStyle: { color: 'rgba(16,185,129,0.08)', borderRadius: [0, 4, 4, 0] }
                 }
