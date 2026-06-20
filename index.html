@@ -657,7 +657,25 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:55:36</div>
+    <div class="time-badge">2026-06-20 14:03:40</div>
+    <button onclick="showHistory()" style="margin-left:8px;padding:4px 12px;font-size:12px;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:4px;cursor:pointer;white-space:nowrap">历史数据</button>
+</div>
+
+<!-- ===== 历史数据弹窗 ===== -->
+<div id="historyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;justify-content:center;align-items:center" onclick="if(event.target===this)closeHistory()">
+    <div style="background:#141a26;border:1px solid #1e293b;border-radius:10px;padding:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;color:#f1f5f9">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="margin:0">历史数据查询</h3>
+            <span onclick="closeHistory()" style="cursor:pointer;font-size:20px;color:#64748b">&times;</span>
+        </div>
+        <div style="margin-bottom:16px">
+            <label>选择日期：</label>
+            <input type="date" id="historyDate" style="padding:6px 10px;border-radius:4px;border:1px solid #1e293b;background:#0b0f17;color:#f1f5f9;font-size:14px;width:100%;margin-top:4px">
+        </div>
+        <button onclick="loadHistory()" style="padding:8px 20px;background:#3b82f6;color:#fff;border:none;border-radius:4px;cursor:pointer;width:100%;font-size:14px">查询</button>
+        <div id="historyResult" style="margin-top:16px;display:none"></div>
+        <div id="historyLoading" style="margin-top:16px;display:none;text-align:center;color:#64748b">查询中...</div>
+    </div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1883,6 +1901,50 @@
         adjustMobileCharts();
         for (var id in chartMap) { chartMap[id].resize(); }
     });
+
+    // ===== 历史数据查询 =====
+    var baseUrl = 'https://raw.githubusercontent.com/mengyuwu111/logistics-dashboard/main/data';
+    function showHistory() {
+        document.getElementById('historyModal').style.display = 'flex';
+        // 默认选择今天
+        var d = new Date();
+        document.getElementById('historyDate').value = d.toISOString().split('T')[0];
+    }
+    function closeHistory() {
+        document.getElementById('historyModal').style.display = 'none';
+    }
+    function loadHistory() {
+        var dateStr = document.getElementById('historyDate').value;
+        if (!dateStr) { alert('请选择日期'); return; }
+        var parts = dateStr.split('-');
+        var url = baseUrl + '/' + parts[0] + '/' + parts[1] + '/' + dateStr + '.json';
+        var resultDiv = document.getElementById('historyResult');
+        var loadingDiv = document.getElementById('historyLoading');
+        resultDiv.style.display = 'none';
+        loadingDiv.style.display = 'block';
+        fetch(url)
+            .then(function(r) { if (!r.ok) throw new Error('无数据'); return r.json(); })
+            .then(function(d) {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div style="background:#0d1320;border-radius:6px;padding:14px">' +
+                    '<div style="font-size:16px;font-weight:700;margin-bottom:10px;color:#3b82f6">' + dateStr + ' 日报数据</div>' +
+                    '<div style="line-height:1.8">' +
+                    '<div>发运线路：<b>' + d.routes + '</b> 条</div>' +
+                    '<div>发运件数：<b>' + d.shipments.toLocaleString() + '</b> 件</div>' +
+                    '<div>当月运费：<b>' + d.freight.toLocaleString() + '</b> 万元</div>' +
+                    '<div>总发货单：<b>' + d.orders.toLocaleString() + '</b> 单</div>' +
+                    '<div>直接运损：<b>' + d.directLoss + '</b> 单</div>' +
+                    '<div>间接运损：<b>' + d.indirectLoss + '</b> 单</div>' +
+                    '<div>及时率：<b>' + d.timelinessRate + '</b>%</div>' +
+                    '</div></div>';
+            })
+            .catch(function(e) {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div style="text-align:center;padding:20px;color:#ef4444">该日期暂无数据</div>';
+            });
+    }
 </script>
 </body>
 </html>
