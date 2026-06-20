@@ -603,7 +603,7 @@
             .main-grid { grid-template-columns: 1fr !important; }
             .main-grid > .card:first-child { display: block !important; }
             .charts-grid { grid-template-columns: 1fr !important; gap: 8px; }
-            .chart-card .chart-box { height: 360px; }
+            .chart-card .chart-box { height: 420px; }
             .chart-card .chart-box .chart-el { height: 100%; }
             .two-col-grid { grid-template-columns: 1fr !important; gap: 8px; }
             .two-col-body { flex-direction: column !important; }
@@ -656,7 +656,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-06-20 13:04:23</div>
+    <div class="time-badge">2026-06-20 13:06:44</div>
 </div>
 
 <!-- ===== 三栏主布局 ===== -->
@@ -1813,12 +1813,12 @@
                     }
                 });
             }
-            // 手机端调整 xAxis 标签：取消旋转 + 间隔显示
+            // 手机端调整 xAxis 标签：旋转60度避免重叠 + 全部显示
             if (mobile && opt.xAxis) {
                 var axes = Array.isArray(opt.xAxis) ? opt.xAxis : [opt.xAxis];
                 axes.forEach(function(ax) {
                     if (ax.type === 'category' && ax.axisLabel) {
-                        ax.axisLabel.rotate = 0;
+                        ax.axisLabel.rotate = 60;
                         ax.axisLabel.interval = 0;
                         ax.axisLabel.fontSize = 10;
                     }
