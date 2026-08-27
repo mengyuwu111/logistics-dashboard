@@ -1,0 +1,10 @@
+{
+  "date": "2026-08-27",
+  "routes": 18,
+  "shipments": 12215,
+  "freight": 2586579.1,
+  "orders": 23937,
+  "directLoss": 34,
+  "indirectLoss": 0,
+  "timelinessRate": 80.66
+}
