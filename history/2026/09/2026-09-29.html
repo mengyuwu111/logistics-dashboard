@@ -657,7 +657,7 @@
         <h1>物流部<span>日报看板</span></h1>
         <div class="subtitle">承运商运费、发货、运损、及时率、时效综合展示</div>
     </div>
-    <div class="time-badge">2026-09-29 09:36:20</div>
+    <div class="time-badge">2026-09-29 10:14:25</div>
     <button onclick="showHistory()" style="margin-left:8px;padding:4px 12px;font-size:12px;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:4px;cursor:pointer;white-space:nowrap">历史数据</button>
 </div>
 
@@ -1433,7 +1433,110 @@
     "shipmentException": "无",
     "damage": ""
 };
-    const routeShipmentData = [];
+    const routeShipmentData = [
+    {
+        "route": "杭州线",
+        "vehicleType": "4.2M",
+        "vehicleCount": 2,
+        "shipmentCount": 324.53
+    },
+    {
+        "route": "九尊线",
+        "vehicleType": "4.2M",
+        "vehicleCount": 2,
+        "shipmentCount": 1878.63
+    },
+    {
+        "route": "快递",
+        "vehicleType": "4.2M",
+        "vehicleCount": 2,
+        "shipmentCount": 55.0
+    },
+    {
+        "route": "南京自提",
+        "vehicleType": "4.2M",
+        "vehicleCount": 1,
+        "shipmentCount": 1225.0
+    },
+    {
+        "route": "陕西线",
+        "vehicleType": "13.5M",
+        "vehicleCount": 2,
+        "shipmentCount": 1478.2
+    },
+    {
+        "route": "苏-昆山线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 380.63
+    },
+    {
+        "route": "苏-吴江线",
+        "vehicleType": "4.2M",
+        "vehicleCount": 1,
+        "shipmentCount": 192.0
+    },
+    {
+        "route": "苏-吴江线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 114.0
+    },
+    {
+        "route": "苏-盐城线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 201.0
+    },
+    {
+        "route": "武汉线",
+        "vehicleType": "13.5M",
+        "vehicleCount": 1,
+        "shipmentCount": 553.15
+    },
+    {
+        "route": "西北线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 598.1
+    },
+    {
+        "route": "苏-南通线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 499.0
+    },
+    {
+        "route": "苏-泰州线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 449.63
+    },
+    {
+        "route": "太原普罗线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 1,
+        "shipmentCount": 334.0
+    },
+    {
+        "route": "兰州线",
+        "vehicleType": "13.5M",
+        "vehicleCount": 1,
+        "shipmentCount": 526.0
+    },
+    {
+        "route": "锦州线",
+        "vehicleType": "6.8M",
+        "vehicleCount": 2,
+        "shipmentCount": 478.88
+    },
+    {
+        "route": "河南线",
+        "vehicleType": "13.5M",
+        "vehicleCount": 2,
+        "shipmentCount": 1256.3
+    }
+];
 
     function createChart(id, config) {
         const el = document.getElementById(id);
